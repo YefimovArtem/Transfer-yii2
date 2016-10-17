@@ -32,11 +32,16 @@ class TransferForm extends Model
 
 
     public function checkValidate()
-    {
+    {  
+        if($this->userFrom == $this->userTo){
+             Yii::$app->getSession()->setFlash('danger', 'You can not send the money itself');
+             return false;
+        }
+        
         $oGetUserFrom = Users::find()->where(['id' => $this->userFrom])->one();
         $oGetUserTo = Users::find()->where(['id' => $this->userTo])->one();
+        
         if (is_null($oGetUserFrom) && is_null($oGetUserTo)) {
-
             throw new Exception('The user is not found in the database');
         }
 
