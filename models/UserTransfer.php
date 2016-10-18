@@ -23,16 +23,21 @@ class UserTransfer extends Model
 
         $oGetUserFrom = Users::find()->where(['id' => $model->userFrom])->one();
         $oGetUserTo = Users::find()->where(['id' => $model->userTo])->one();
+        
         $oGetUserFrom->balance = $oGetUserFrom->balance - $model->sum;
+        $oGetUserTo->balance = $oGetUserTo->balance + $model->sum;
+        
+        $transaction = Yii::$app->db->beginTransaction();
 
-
-        if ($oGetUserFrom->update()) {
-            $oGetUserTo->balance = $oGetUserTo->balance + $model->sum;
-            if ($oGetUserTo->update()) {
+        if ($oGetUserFrom->update() && $oGetUserTo->update()) {
+                $transaction->commit();
                 Yii::$app->getSession()->setFlash('success', $oGetUserFrom->name . ' has been successfully transferred an amount of ' . $model->sum . ' from the ' . $oGetUserTo->name);
                 return true;
-            }
+            }else{
+                $transaction->rollback();
+                return false;
         }
+        
         throw new Exception('Error');
     }
 
